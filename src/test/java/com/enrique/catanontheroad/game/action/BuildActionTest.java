@@ -2,6 +2,7 @@ package com.enrique.catanontheroad.game.action;
 
 import com.enrique.catanontheroad.game.Game;
 import com.enrique.catanontheroad.game.Player;
+import com.enrique.catanontheroad.game.card.Metropolis;
 import com.enrique.catanontheroad.game.card.MetropolisSide;
 import com.enrique.catanontheroad.game.card.MetropolisType;
 import com.enrique.catanontheroad.game.card.ResourceType;
@@ -225,6 +226,109 @@ class BuildActionTest {
 
         assertThat(player.getRoadCount()).isEqualTo(3);
         assertThat(player.hasLongestRoute()).isTrue();
+    }
+
+    @Test
+    void build_metropolis_b_road_should_draw_cards_per_road() {
+        Game bGame = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.B, 42L);
+        Player bPlayer = bGame.getCurrentPlayer();
+
+        // Build a city (need settlement first - player already has starting settlement)
+        bPlayer.getHand().add(ResourceType.WHEAT, 2);
+        bPlayer.getHand().add(ResourceType.ORE, 3);
+        buildAction.buildCity(bPlayer, bGame);
+
+        // Add extra roads (player has 1 starting road)
+        bPlayer.addRoad();
+        bPlayer.addRoad(); // 3 roads total
+
+        // Build B-Road metropolis
+        bPlayer.getHand().add(ResourceType.WOOL, 3);
+        bPlayer.getHand().add(ResourceType.ORE, 1);
+        Metropolis roadMetropolis = bGame.getMetropolisStack().take(MetropolisType.ROAD);
+        int handBefore = bPlayer.getHand().total();
+
+        var result = buildAction.buildMetropolis(bPlayer, bGame, roadMetropolis);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.bonusDraws()).hasSize(3); // 3 roads = 3 draws
+        assertThat(bPlayer.getHand().total()).isEqualTo(handBefore - 4 + 3); // -4 cost, +3 draws
+    }
+
+    @Test
+    void build_metropolis_b_knight_should_draw_cards_per_knight() {
+        Game bGame = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.B, 42L);
+        Player bPlayer = bGame.getCurrentPlayer();
+
+        // Build a city
+        bPlayer.getHand().add(ResourceType.WHEAT, 2);
+        bPlayer.getHand().add(ResourceType.ORE, 3);
+        buildAction.buildCity(bPlayer, bGame);
+
+        // Add knights
+        bPlayer.addKnight();
+        bPlayer.addKnight(); // 2 knights
+
+        // Build B-Knight metropolis
+        bPlayer.getHand().add(ResourceType.WOOL, 3);
+        bPlayer.getHand().add(ResourceType.ORE, 1);
+        Metropolis knightMetropolis = bGame.getMetropolisStack().take(MetropolisType.KNIGHT);
+        int handBefore = bPlayer.getHand().total();
+
+        var result = buildAction.buildMetropolis(bPlayer, bGame, knightMetropolis);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.bonusDraws()).hasSize(2); // 2 knights = 2 draws
+        assertThat(bPlayer.getHand().total()).isEqualTo(handBefore - 4 + 2); // -4 cost, +2 draws
+    }
+
+    @Test
+    void build_metropolis_b_tiebreak_should_not_draw_bonus_cards() {
+        Game bGame = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.B, 42L);
+        Player bPlayer = bGame.getCurrentPlayer();
+
+        // Build a city
+        bPlayer.getHand().add(ResourceType.WHEAT, 2);
+        bPlayer.getHand().add(ResourceType.ORE, 3);
+        buildAction.buildCity(bPlayer, bGame);
+
+        // Build B-Longest-Route metropolis (no upon-build draw)
+        bPlayer.getHand().add(ResourceType.WOOL, 3);
+        bPlayer.getHand().add(ResourceType.ORE, 1);
+        Metropolis lrMetropolis = bGame.getMetropolisStack().take(MetropolisType.LONGEST_ROUTE);
+
+        var result = buildAction.buildMetropolis(bPlayer, bGame, lrMetropolis);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.bonusDraws()).isEmpty();
+    }
+
+    @Test
+    void build_metropolis_a_should_not_draw_bonus_cards() {
+        // A-side metropolises have no upon-build effects
+        player.getHand().add(ResourceType.WHEAT, 2);
+        player.getHand().add(ResourceType.ORE, 3);
+        buildAction.buildCity(player, game);
+
+        player.getHand().add(ResourceType.WOOL, 3);
+        player.getHand().add(ResourceType.ORE, 1);
+        var metropolis = game.getMetropolisStack().take(MetropolisType.ROAD);
+
+        var result = buildAction.buildMetropolis(player, game, metropolis);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.bonusDraws()).isEmpty();
+    }
+
+    @Test
+    void build_result_should_have_empty_bonus_draws_for_regular_builds() {
+        player.getHand().add(ResourceType.WOOL);
+        player.getHand().add(ResourceType.ORE);
+
+        var result = buildAction.buildKnight(player, game);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.bonusDraws()).isEmpty();
     }
 
     private static org.assertj.core.api.Condition<String> contains(String text) {

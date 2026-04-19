@@ -7,16 +7,21 @@ import com.enrique.catanontheroad.game.card.BuildingType;
 import com.enrique.catanontheroad.game.card.Metropolis;
 import com.enrique.catanontheroad.game.card.ResourceType;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class BuildAction {
 
-    public record BuildResult(boolean success, String message) {
+    public record BuildResult(boolean success, String message, List<ResourceType> bonusDraws) {
         public static BuildResult success(String message) {
-            return new BuildResult(true, message);
+            return new BuildResult(true, message, List.of());
+        }
+        public static BuildResult successWithDraws(String message, List<ResourceType> draws) {
+            return new BuildResult(true, message, draws);
         }
         public static BuildResult failure(String message) {
-            return new BuildResult(false, message);
+            return new BuildResult(false, message, List.of());
         }
     }
 
@@ -153,6 +158,31 @@ public class BuildAction {
         player.addMetropolis(metropolis);
         game.updateBonuses();
 
-        return BuildResult.success("Built " + metropolis.type().name().toLowerCase() + " metropolis");
+        // B-side upon-build draw effects
+        List<ResourceType> bonusDraws = new ArrayList<>();
+        if (metropolis.hasOnBuildDrawForRoads()) {
+            int drawCount = player.getRoadCount();
+            for (int i = 0; i < drawCount; i++) {
+                ResourceType card = game.getResourceDeck().draw();
+                player.getHand().add(card);
+                bonusDraws.add(card);
+            }
+        } else if (metropolis.hasOnBuildDrawForKnights()) {
+            int drawCount = player.getKnightCount();
+            for (int i = 0; i < drawCount; i++) {
+                ResourceType card = game.getResourceDeck().draw();
+                player.getHand().add(card);
+                bonusDraws.add(card);
+            }
+        }
+
+        String typeName = metropolis.type().name().toLowerCase().replace('_', '-');
+        if (bonusDraws.isEmpty()) {
+            return BuildResult.success("Built " + typeName + " metropolis");
+        }
+        return BuildResult.successWithDraws(
+            "Built " + typeName + " metropolis, drew " + bonusDraws.size() + " bonus cards",
+            bonusDraws
+        );
     }
 }

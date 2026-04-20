@@ -34,6 +34,23 @@
 - Unit tests for all game components
 - JaCoCo coverage configuration
 
+### Documentation
+- Complete menu tree reference (MENUS.md)
+- Testing strategy and coverage documentation (TESTING.md)
+- Logging levels and configuration (LOGGING.md)
+- Glossary of game and technical terms (GLOSSARY.md)
+- Future enhancements and roadmap (TODO.md)
+- Issues, gotchas, and workarounds (ISSUES.md)
+- Architecture overview (ARCHITECTURE.md)
+- Development guide (DEVELOPMENT.md)
+- Rules reference (RULES_REFERENCE.md)
+
+### Test Coverage
+- 100% JaCoCo line coverage (with documented exclusions)
+- All game logic unit tested
+- Shell UI and service layer tested via integration tests
+- JaCoCo verified configuration
+
 ### Implementation Status
 
 **Complete:**
@@ -46,9 +63,9 @@
 - Phase 7: Event Resolution
 - Phase 8: Metropolis B upon-build effects
 - Phase 9: Shell UI (menus, rendering, service layer)
-
-**In Progress:**
-- Phase 9-10: Shell UI (menus, rendering)
+- Phase 10: Full documentation suite
+- Phase 11: 100% test coverage with JaCoCo
 
 **Pending:**
-- Phase 11-12: Integration tests, 100% coverage
+- Manual end-to-end playtesting with `./gradlew bootRun`
+- Integration tests for complex menu flows (optional, deferred)

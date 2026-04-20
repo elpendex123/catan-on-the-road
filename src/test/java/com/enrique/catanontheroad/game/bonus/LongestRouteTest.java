@@ -137,6 +137,50 @@ class LongestRouteTest {
     }
 
     @Test
+    void b_side_tiebreak_holder_keeps_bonus_when_already_holder() {
+        LongestRoute lr = new LongestRoute();
+
+        // Alice gets longest route first and has the metropolis
+        alice.addRoad();
+        alice.addRoad();
+        alice.addRoad();
+        alice.addSettlement();
+        alice.addCity();
+        alice.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.LONGEST_ROUTE));
+        lr.checkAndUpdate(players, MetropolisSide.B);
+        assertThat(lr.getHolder()).isEqualTo(alice);
+
+        // Bob ties at 3 roads
+        bob.addRoad();
+        bob.addRoad();
+        bob.addRoad();
+        lr.checkAndUpdate(players, MetropolisSide.B);
+
+        // Alice keeps it (she's already holder AND has tiebreak)
+        assertThat(lr.getHolder()).isEqualTo(alice);
+    }
+
+    @Test
+    void b_side_tie_without_metropolis_holder_keeps_current() {
+        LongestRoute lr = new LongestRoute();
+
+        // Alice gets longest route
+        alice.addRoad();
+        alice.addRoad();
+        alice.addRoad();
+        lr.checkAndUpdate(players, MetropolisSide.B);
+
+        // Bob ties but nobody has the tiebreak metropolis
+        bob.addRoad();
+        bob.addRoad();
+        bob.addRoad();
+        lr.checkAndUpdate(players, MetropolisSide.B);
+
+        // Alice keeps it (no tiebreak holder, current holder retains)
+        assertThat(lr.getHolder()).isEqualTo(alice);
+    }
+
+    @Test
     void metropolis_holder_does_not_win_without_tie() {
         LongestRoute lr = new LongestRoute();
 
@@ -159,5 +203,56 @@ class LongestRouteTest {
 
         // Alice still holds (strictly more roads)
         assertThat(lr.getHolder()).isEqualTo(alice);
+    }
+
+    @Test
+    void third_player_tie_should_not_steal_from_tiebreak_holder() {
+        LongestRoute lr = new LongestRoute();
+
+        // Bob gets the metropolis and longest route
+        bob.addRoad();
+        bob.addRoad();
+        bob.addRoad();
+        bob.addSettlement();
+        bob.addCity();
+        bob.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.LONGEST_ROUTE));
+        lr.checkAndUpdate(players, MetropolisSide.B);
+        assertThat(lr.getHolder()).isEqualTo(bob);
+
+        // Carol ties with Bob at 3 roads but is NOT the tiebreak holder
+        carol.addRoad();
+        carol.addRoad();
+        carol.addRoad();
+        lr.checkAndUpdate(players, MetropolisSide.B);
+
+        // Bob keeps it (he's holder AND tiebreak holder)
+        assertThat(lr.getHolder()).isEqualTo(bob);
+    }
+
+    @Test
+    void player_with_non_tiebreak_metropolis_does_not_win_tie() {
+        LongestRoute lr = new LongestRoute();
+
+        // Alice gets 3 roads and a non-tiebreak metropolis
+        alice.addRoad();
+        alice.addRoad();
+        alice.addRoad();
+        alice.addSettlement();
+        alice.addCity();
+        alice.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.ROAD));
+        lr.checkAndUpdate(players, MetropolisSide.B);
+        assertThat(lr.getHolder()).isEqualTo(alice);
+
+        // Bob ties at 3 roads with the actual tiebreak metropolis
+        bob.addRoad();
+        bob.addRoad();
+        bob.addRoad();
+        bob.addSettlement();
+        bob.addCity();
+        bob.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.LONGEST_ROUTE));
+        lr.checkAndUpdate(players, MetropolisSide.B);
+
+        // Bob wins the tie because he has the tiebreak metropolis
+        assertThat(lr.getHolder()).isEqualTo(bob);
     }
 }

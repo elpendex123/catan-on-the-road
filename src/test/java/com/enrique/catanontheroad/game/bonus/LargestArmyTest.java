@@ -129,6 +129,40 @@ class LargestArmyTest {
     }
 
     @Test
+    void b_side_tiebreak_holder_keeps_bonus_when_already_holder() {
+        LargestArmy la = new LargestArmy();
+
+        alice.addKnight();
+        alice.addKnight();
+        alice.addSettlement();
+        alice.addCity();
+        alice.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.LARGEST_ARMY));
+        la.checkAndUpdate(players, MetropolisSide.B);
+        assertThat(la.getHolder()).isEqualTo(alice);
+
+        bob.addKnight();
+        bob.addKnight();
+        la.checkAndUpdate(players, MetropolisSide.B);
+
+        assertThat(la.getHolder()).isEqualTo(alice);
+    }
+
+    @Test
+    void b_side_tie_without_metropolis_holder_keeps_current() {
+        LargestArmy la = new LargestArmy();
+
+        alice.addKnight();
+        alice.addKnight();
+        la.checkAndUpdate(players, MetropolisSide.B);
+
+        bob.addKnight();
+        bob.addKnight();
+        la.checkAndUpdate(players, MetropolisSide.B);
+
+        assertThat(la.getHolder()).isEqualTo(alice);
+    }
+
+    @Test
     void metropolis_holder_does_not_win_without_tie() {
         LargestArmy la = new LargestArmy();
 
@@ -149,5 +183,52 @@ class LargestArmyTest {
 
         // Alice still holds (strictly more knights)
         assertThat(la.getHolder()).isEqualTo(alice);
+    }
+
+    @Test
+    void third_player_tie_should_not_steal_from_tiebreak_holder() {
+        LargestArmy la = new LargestArmy();
+
+        // Bob gets the metropolis and largest army
+        bob.addKnight();
+        bob.addKnight();
+        bob.addSettlement();
+        bob.addCity();
+        bob.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.LARGEST_ARMY));
+        la.checkAndUpdate(players, MetropolisSide.B);
+        assertThat(la.getHolder()).isEqualTo(bob);
+
+        // Carol ties with Bob at 2 knights but is NOT the tiebreak holder
+        carol.addKnight();
+        carol.addKnight();
+        la.checkAndUpdate(players, MetropolisSide.B);
+
+        // Bob keeps it
+        assertThat(la.getHolder()).isEqualTo(bob);
+    }
+
+    @Test
+    void player_with_non_tiebreak_metropolis_does_not_win_tie() {
+        LargestArmy la = new LargestArmy();
+
+        // Alice gets 2 knights and a non-tiebreak metropolis
+        alice.addKnight();
+        alice.addKnight();
+        alice.addSettlement();
+        alice.addCity();
+        alice.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.ROAD));
+        la.checkAndUpdate(players, MetropolisSide.B);
+        assertThat(la.getHolder()).isEqualTo(alice);
+
+        // Bob ties at 2 knights with the actual tiebreak metropolis
+        bob.addKnight();
+        bob.addKnight();
+        bob.addSettlement();
+        bob.addCity();
+        bob.addMetropolis(new Metropolis(MetropolisSide.B, MetropolisType.LARGEST_ARMY));
+        la.checkAndUpdate(players, MetropolisSide.B);
+
+        // Bob wins the tie because he has the tiebreak metropolis
+        assertThat(la.getHolder()).isEqualTo(bob);
     }
 }

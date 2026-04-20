@@ -103,6 +103,10 @@ public class MenuPrompt {
     }
 
     public String promptText(String prompt, boolean showBack, boolean showQuit) {
+        return promptText(prompt, showBack, showQuit, false);
+    }
+
+    public String promptText(String prompt, boolean showBack, boolean showQuit, boolean allowBlank) {
         while (true) {
             System.out.print(prompt);
             if (showBack) System.out.print("   [B] Back");
@@ -118,7 +122,7 @@ public class MenuPrompt {
                 return "Q";
             }
 
-            if (input.isEmpty()) {
+            if (input.isEmpty() && !allowBlank) {
                 System.out.println(AnsiColors.red("Input cannot be empty."));
                 continue;
             }

@@ -69,7 +69,7 @@ public class SetupMenu {
         // Step 5: Seed
         long seed;
         while (true) {
-            String seedInput = prompt.promptText("Enter seed (blank for random):", true, true);
+            String seedInput = prompt.promptText("Enter seed (blank for random, or any number):", true, true, true);
 
             if (seedInput.equals("Q")) return false;
             if (seedInput.equals("B")) {

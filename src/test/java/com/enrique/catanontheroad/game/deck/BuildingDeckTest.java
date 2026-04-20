@@ -147,6 +147,28 @@ class BuildingDeckTest {
     }
 
     @Test
+    void row_should_never_have_five_of_a_kind_after_operations() {
+        // The 5-of-a-kind check reshuffles if all 5 are the same type.
+        // Test that after many operations, the row always has mixed types.
+        // (The 5-of-a-kind code auto-reshuffles to prevent it.)
+        SeededRandom rng = new SeededRandom(42L);
+        BuildingDeck deck = new BuildingDeck(rng);
+
+        for (int i = 0; i < 25; i++) {
+            List<BuildingCard> row = deck.getBuildingRow();
+            if (row.isEmpty()) break;
+
+            if (row.size() == 5) {
+                Set<BuildingType> types = row.stream().map(BuildingCard::type).collect(Collectors.toSet());
+                assertThat(types.size()).isGreaterThan(1);
+            }
+
+            BuildingCard taken = deck.takeFromRow(0);
+            deck.discard(taken);
+        }
+    }
+
+    @Test
     void take_first_of_type_not_in_row_should_throw() {
         SeededRandom rng = new SeededRandom(42L);
         BuildingDeck deck = new BuildingDeck(rng);

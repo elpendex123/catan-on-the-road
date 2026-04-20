@@ -7,29 +7,46 @@ import com.enrique.catanontheroad.shell.input.MenuPrompt;
 import org.jline.reader.LineReader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 
 import java.util.List;
 
 @ShellComponent
+@Lazy
 public class MainMenuCommands {
 
     private static final Logger log = LoggerFactory.getLogger(MainMenuCommands.class);
 
     private final GameService gameService;
     private final LineReader lineReader;
-    private final SetupMenu setupMenu;
-    private final TurnMenu turnMenu;
     private final ScoreboardRenderer scoreboardRenderer;
+    private SetupMenu setupMenu;
+    private TurnMenu turnMenu;
 
-    public MainMenuCommands(GameService gameService, LineReader lineReader,
-                            SetupMenu setupMenu, TurnMenu turnMenu) {
+    public MainMenuCommands(@Lazy GameService gameService, @Lazy LineReader lineReader) {
         this.gameService = gameService;
         this.lineReader = lineReader;
-        this.setupMenu = setupMenu;
-        this.turnMenu = turnMenu;
         this.scoreboardRenderer = new ScoreboardRenderer();
+    }
+
+    // Lazy-load menus to avoid circular dependency with Spring Shell
+    private SetupMenu getSetupMenu() {
+        if (setupMenu == null) {
+            setupMenu = new SetupMenu(gameService);
+        }
+        return setupMenu;
+    }
+
+    private TurnMenu getTurnMenu() {
+        if (turnMenu == null) {
+            BuildMenu buildMenu = new BuildMenu(gameService);
+            TradeMenu tradeMenu = new TradeMenu(gameService);
+            SubstituteMenu substituteMenu = new SubstituteMenu(gameService);
+            turnMenu = new TurnMenu(gameService, buildMenu, tradeMenu, substituteMenu);
+        }
+        return turnMenu;
     }
 
     @ShellMethod(value = "Start the game", key = "play")
@@ -51,7 +68,7 @@ public class MainMenuCommands {
             }
 
             if (selection.isOption() && selection.choice().equals("1")) {
-                boolean started = setupMenu.run(prompt);
+                boolean started = getSetupMenu().run(prompt);
                 if (started) {
                     runGameLoop(prompt);
                     if (gameService.hasActiveGame()) {
@@ -83,7 +100,7 @@ public class MainMenuCommands {
             }
 
             // Action phase
-            boolean quit = turnMenu.run(prompt);
+            boolean quit = getTurnMenu().run(prompt);
             if (quit) {
                 gameService.endGame();
                 break;

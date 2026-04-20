@@ -136,4 +136,25 @@ class GameEngineTest {
     void get_players_should_return_all_players() {
         assertThat(engine.getPlayers()).hasSize(3);
     }
+
+    @Test
+    void trade_and_substitute_should_be_unavailable_before_harvest() {
+        assertThat(engine.isTradeAvailable()).isFalse();
+        assertThat(engine.isSubstituteAvailable()).isFalse();
+    }
+
+    @Test
+    void mark_trade_used_should_be_safe_before_harvest() {
+        engine.markTradeUsed(); // Should not throw
+    }
+
+    @Test
+    void mark_substitute_used_should_be_safe_before_harvest() {
+        engine.markSubstituteUsed(); // Should not throw
+    }
+
+    @Test
+    void check_win_condition_should_delegate_to_game() {
+        assertThat(engine.checkWinCondition()).isFalse();
+    }
 }

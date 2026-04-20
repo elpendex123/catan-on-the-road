@@ -176,6 +176,20 @@ class GameTest {
     }
 
     @Test
+    void should_expose_rng() {
+        Game game = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.A, 42L);
+        assertThat(game.getRng()).isNotNull();
+    }
+
+    @Test
+    void check_win_condition_should_return_false_below_7_vp() {
+        Game game = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.A, 42L);
+        assertThat(game.checkWinCondition()).isFalse();
+        assertThat(game.isGameEnded()).isFalse();
+        assertThat(game.getWinner()).isNull();
+    }
+
+    @Test
     void update_bonuses_should_check_longest_route_and_largest_army() {
         Game game = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.A, 42L);
         Player alice = game.getPlayers().get(0);

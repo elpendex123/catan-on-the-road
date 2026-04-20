@@ -229,6 +229,160 @@ class BuildActionTest {
     }
 
     @Test
+    void build_settlement_should_fail_without_resources() {
+        for (ResourceType type : ResourceType.values()) {
+            while (player.getHand().has(type)) {
+                player.getHand().remove(type);
+            }
+        }
+
+        var result = buildAction.buildSettlement(player, game);
+
+        assertThat(result.success()).isFalse();
+    }
+
+    @Test
+    void build_city_should_fail_without_resources() {
+        for (ResourceType type : ResourceType.values()) {
+            while (player.getHand().has(type)) {
+                player.getHand().remove(type);
+            }
+        }
+
+        var result = buildAction.buildCity(player, game);
+
+        assertThat(result.success()).isFalse();
+    }
+
+    @Test
+    void build_knight_should_fail_without_resources() {
+        for (ResourceType type : ResourceType.values()) {
+            while (player.getHand().has(type)) {
+                player.getHand().remove(type);
+            }
+        }
+
+        var result = buildAction.buildKnight(player, game);
+
+        assertThat(result.success()).isFalse();
+    }
+
+    @Test
+    void build_metropolis_should_fail_without_resources() {
+        for (ResourceType type : ResourceType.values()) {
+            while (player.getHand().has(type)) {
+                player.getHand().remove(type);
+            }
+        }
+        var metropolis = game.getMetropolisStack().take(com.enrique.catanontheroad.game.card.MetropolisType.ROAD);
+
+        var result = buildAction.buildMetropolis(player, game, metropolis);
+
+        assertThat(result.success()).isFalse();
+    }
+
+    @Test
+    void cannot_afford_metropolis_when_stack_empty() {
+        // Take all metropolises
+        while (!game.getMetropolisStack().isEmpty()) {
+            game.getMetropolisStack().take(0);
+        }
+
+        var result = buildAction.canAffordMetropolis(player, game);
+
+        assertThat(result.affordable()).isFalse();
+        assertThat(result.reason()).contains("no metropolises");
+    }
+
+    @Test
+    void cannot_afford_settlement_without_resources() {
+        for (ResourceType type : ResourceType.values()) {
+            while (player.getHand().has(type)) {
+                player.getHand().remove(type);
+            }
+        }
+
+        var result = buildAction.canAffordSettlement(player);
+
+        assertThat(result.affordable()).isFalse();
+    }
+
+    @Test
+    void build_road_should_fail_when_not_in_row() {
+        // Take all roads from the building row until none remain
+        // This is hard to engineer deterministically, so test the no-row-type branch
+        // by checking hasTypeInRow is used
+        player.getHand().add(ResourceType.BRICK, 20);
+        player.getHand().add(ResourceType.WOOD, 20);
+
+        // Build all roads from the row until none are available
+        while (game.getBuildingDeck().hasTypeInRow(com.enrique.catanontheroad.game.card.BuildingType.ROAD)) {
+            buildAction.buildRoad(player, game);
+        }
+
+        var result = buildAction.buildRoad(player, game);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("no road available");
+    }
+
+    @Test
+    void build_settlement_should_fail_when_not_in_row() {
+        player.getHand().add(ResourceType.BRICK, 30);
+        player.getHand().add(ResourceType.WOOD, 30);
+        player.getHand().add(ResourceType.WOOL, 30);
+        player.getHand().add(ResourceType.WHEAT, 30);
+
+        while (game.getBuildingDeck().hasTypeInRow(com.enrique.catanontheroad.game.card.BuildingType.SETTLEMENT)) {
+            buildAction.buildSettlement(player, game);
+        }
+
+        var result = buildAction.buildSettlement(player, game);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("no settlement available");
+    }
+
+    @Test
+    void build_city_should_fail_when_not_in_row() {
+        // Need to add enough settlements and resources to exhaust cities
+        player.getHand().add(ResourceType.BRICK, 50);
+        player.getHand().add(ResourceType.WOOD, 50);
+        player.getHand().add(ResourceType.WOOL, 50);
+        player.getHand().add(ResourceType.WHEAT, 50);
+        player.getHand().add(ResourceType.ORE, 50);
+
+        // Build settlements first, then cities
+        for (int i = 0; i < 5; i++) {
+            buildAction.buildSettlement(player, game);
+        }
+
+        while (game.getBuildingDeck().hasTypeInRow(com.enrique.catanontheroad.game.card.BuildingType.CITY)) {
+            buildAction.buildCity(player, game);
+        }
+
+        var result = buildAction.buildCity(player, game);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("no city available");
+    }
+
+    @Test
+    void build_knight_should_fail_when_not_in_row() {
+        player.getHand().add(ResourceType.WOOL, 30);
+        player.getHand().add(ResourceType.ORE, 30);
+
+        while (game.getBuildingDeck().hasTypeInRow(com.enrique.catanontheroad.game.card.BuildingType.KNIGHT)) {
+            buildAction.buildKnight(player, game);
+        }
+
+        var result = buildAction.buildKnight(player, game);
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).contains("no knight available");
+    }
+
+    @Test
     void build_metropolis_b_road_should_draw_cards_per_road() {
         Game bGame = new Game(List.of("Alice", "Bob", "Carol"), MetropolisSide.B, 42L);
         Player bPlayer = bGame.getCurrentPlayer();

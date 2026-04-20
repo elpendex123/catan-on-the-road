@@ -6,12 +6,10 @@ import com.enrique.catanontheroad.shell.display.AnsiColors;
 import com.enrique.catanontheroad.shell.input.MenuPrompt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class SetupMenu {
 
     private static final Logger log = LoggerFactory.getLogger(SetupMenu.class);

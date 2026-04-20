@@ -128,6 +128,40 @@ class TradeActionTest {
     }
 
     @Test
+    void validate_offer_should_fail_with_null_offered_types() {
+        var result = tradeAction.validateOffer(alice, null, ResourceType.WOOL);
+
+        assertThat(result.isValid()).isFalse();
+    }
+
+    @Test
+    void trade_result_declined_should_have_correct_fields() {
+        var result = TradeAction.TradeResult.declined("Bob said no");
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).isEqualTo("Bob said no");
+        assertThat(result.givenType()).isNull();
+        assertThat(result.receivedType()).isNull();
+    }
+
+    @Test
+    void trade_result_auto_declined_should_have_correct_fields() {
+        var result = TradeAction.TradeResult.autoDeclined("No wool");
+
+        assertThat(result.success()).isFalse();
+        assertThat(result.message()).isEqualTo("No wool");
+    }
+
+    @Test
+    void trade_result_accepted_should_have_correct_fields() {
+        var result = TradeAction.TradeResult.accepted(ResourceType.BRICK, ResourceType.WOOL);
+
+        assertThat(result.success()).isTrue();
+        assertThat(result.givenType()).isEqualTo(ResourceType.BRICK);
+        assertThat(result.receivedType()).isEqualTo(ResourceType.WOOL);
+    }
+
+    @Test
     void validate_offer_with_multiple_types() {
         alice.getHand().add(ResourceType.BRICK);
         alice.getHand().add(ResourceType.WOOD);

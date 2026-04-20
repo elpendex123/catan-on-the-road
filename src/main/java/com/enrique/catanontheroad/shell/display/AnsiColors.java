@@ -35,7 +35,7 @@ public final class AnsiColors {
             case "wood" -> GREEN + name + RESET;
             case "wool" -> WHITE + name + RESET;
             case "wheat" -> YELLOW + name + RESET;
-            case "ore" -> DARK_GRAY + name + RESET;
+            case "ore" -> CYAN + name + RESET;
             default -> name;
         };
     }

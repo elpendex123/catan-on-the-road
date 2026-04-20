@@ -32,9 +32,9 @@ class AnsiColorsTest {
     }
 
     @Test
-    void should_color_ore_dark_gray() {
+    void should_color_ore_cyan() {
         String result = AnsiColors.colorResource(ResourceType.ORE);
-        assertThat(result).contains("ore").contains(AnsiColors.DARK_GRAY);
+        assertThat(result).contains("ore").contains(AnsiColors.CYAN);
     }
 
     @Test

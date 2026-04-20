@@ -71,10 +71,11 @@ public class MainMenuCommands {
                 boolean started = getSetupMenu().run(prompt);
                 if (started) {
                     runGameLoop(prompt);
+                    // Always show final scoreboard after game ends (whether win or quit)
                     if (gameService.hasActiveGame()) {
                         showFinalScoreboard();
+                        gameService.clearGame();
                     }
-                    gameService.clearGame();
                 }
             }
         }

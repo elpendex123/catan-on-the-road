@@ -14,38 +14,26 @@ public class BoardRenderer {
         List<BuildingCard> row = game.getBuildingDeck().getBuildingRow();
         StringBuilder sb = new StringBuilder();
 
-        sb.append("╔═══════════════════════════ BUILDING ROW ═══════════════════════════╗\n");
-        sb.append("║                                                                    ║\n");
+        sb.append("╔════════════════════════════ BUILDING ROW ════════════════════════════════╗\n");
+        sb.append("║                                                                          ║\n");
 
-        // Render cards in rows of up to 3
+        // Render all 5 cards in a single line with their names
+        sb.append("║");
         for (int i = 0; i < row.size(); i++) {
-            if (i % 3 == 0 && i > 0) {
-                sb.append("║                                                                    ║\n");
-            }
             BuildingCard card = row.get(i);
-            if (i % 3 == 0) sb.append("║  ");
-            sb.append("[").append(i + 1).append("] ").append(formatCardName(card));
-            if (i % 3 == 2 || i == row.size() - 1) {
-                sb.append("\n");
-                renderCardCost(sb, row, i - (i % 3), Math.min(i + 1, row.size()));
-            }
+            sb.append("  [").append(i + 1).append("] ").append(formatCardName(card));
         }
+        sb.append("\n");
 
-        sb.append("║                                                                    ║\n");
-        sb.append("╚════════════════════════════════════════════════════════════════════╝\n");
-
-        return sb.toString();
-    }
-
-    private void renderCardCost(StringBuilder sb, List<BuildingCard> row, int from, int to) {
+        // Render cost rows
         int maxCostLines = 0;
-        for (int i = from; i < to; i++) {
-            maxCostLines = Math.max(maxCostLines, row.get(i).cost().size());
+        for (BuildingCard card : row) {
+            maxCostLines = Math.max(maxCostLines, card.cost().size());
         }
 
         for (int line = 0; line < maxCostLines; line++) {
-            sb.append("║  ");
-            for (int i = from; i < to; i++) {
+            sb.append("║");
+            for (int i = 0; i < row.size(); i++) {
                 Map<ResourceType, Integer> cost = row.get(i).cost();
                 ResourceType[] types = cost.keySet().toArray(new ResourceType[0]);
                 if (line < types.length) {
@@ -53,14 +41,19 @@ public class BoardRenderer {
                     sb.append("  ").append(cost.get(type)).append(" ")
                       .append(AnsiColors.colorResource(type));
                 }
-                sb.append("              ");
+                sb.append("           ");
             }
-            sb.append("\n");
+            sb.append("║\n");
         }
+
+        sb.append("║                                                                          ║\n");
+        sb.append("╚══════════════════════════════════════════════════════════════════════════╝\n");
+
+        return sb.toString();
     }
 
     private String formatCardName(BuildingCard card) {
-        return String.format("%-16s", card.type().name());
+        return String.format("%-13s", card.type().name());
     }
 
     public String renderPlayerAreas(Game game) {

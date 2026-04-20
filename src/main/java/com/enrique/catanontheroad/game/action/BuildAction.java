@@ -68,12 +68,19 @@ public class BuildAction {
     }
 
     private AffordabilityCheck checkAffordability(Player player, Map<ResourceType, Integer> cost) {
+        StringBuilder missing = new StringBuilder();
         for (Map.Entry<ResourceType, Integer> entry : cost.entrySet()) {
             int have = player.getHand().count(entry.getKey());
             int need = entry.getValue();
             if (have < need) {
-                return AffordabilityCheck.no("need " + (need - have) + " more " + entry.getKey().name().toLowerCase());
+                if (missing.length() > 0) {
+                    missing.append(", ");
+                }
+                missing.append("need ").append(need - have).append(" more ").append(entry.getKey().name().toLowerCase());
             }
+        }
+        if (missing.length() > 0) {
+            return AffordabilityCheck.no(missing.toString());
         }
         return AffordabilityCheck.yes();
     }
